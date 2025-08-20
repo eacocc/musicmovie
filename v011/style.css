@@ -1,0 +1,6 @@
+body.theme-default { background: #F8FAFC; color: #222; }
+body.theme-dark { background: #1E293B; color: #F8FAFC; }
+body.theme-light { background: #fff; color: #222; }
+.category-tag { display:inline-block; margin:2px; padding:4px 16px; border-radius:999px; background:#eee; color:#222; font-size:14px; text-decoration:none; }
+.theme-dark .category-tag { background:#333; color:#fff; }
+.theme-default .category-tag:hover, .theme-dark .category-tag:hover { background:#2E7D32; color:#fff; }
