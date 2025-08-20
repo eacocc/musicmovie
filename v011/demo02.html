@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EACO 文娱数字资产平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <!-- Web3 钱包集成 -->
+    <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.73.0/lib/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@project-serum/anchor@0.26.0/dist/browser/index.js"></script>
+    
+    <!-- 配置Tailwind主题 -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2E7D32', // 主绿色
+                        secondary: '#4CAF50', // 次要绿色
+                        accent: '#81C784', // 强调色
+                        dark: '#1B5E20', // 深绿色
+                        light: '#E8F5E9', // 浅绿色
+                        neutral: '#F5F5F5', // 中性色
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            .gradient-overlay {
+                background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);
+            }
+        }
+    </style>
+</head>
+
+<body class="theme-default bg-gray-50 text-gray-800 transition-colors duration-300">
+    <!-- 主题切换类 -->
+    <div class="hidden">
+        <div class="theme-default"></div>
+        <div class="theme-light"></div>
+        <div class="theme-dark"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-sm transition-all duration-300">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="#" class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center mr-2">
+                            <span class="text-white font-bold text-xl">e</span>
+                        </div>
+                        <span class="text-xl font-bold text-primary dark:text-secondary">EACO</span>
+                    </a>
+                </div>
+
+                <!-- 主导航 - 桌面端 -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#" class="text-primary dark:text-secondary font-medium hover:text-dark dark:hover:text-accent transition-colors">首页</a>
+                    <a href="#movies" class="text-gray-600 dark:text-gray-300 font-medium hover:text-primary dark:hover:text-secondary transition-colors">电影</a>
+                    <a href="#music" class="text-gray-600 dark:text-gray-300 font-medium hover:text-primary dark:hover:text-secondary transition-colors">音乐</a>
+                    <a href="#novels" class="text-gray-600 dark:text-gray-300 font-medium hover:text-primary dark:hover:text-secondary transition-colors">小说</a>
+                    <a href="#exchange" class="text-gray-600 dark:text-gray-300 font-medium hover:text-primary dark:hover:text-secondary transition-colors">资产兑换</a>
+                    <a href="#creators" class="text-gray-600 dark:text-gray-300 font-medium hover:text-primary dark:hover:text-secondary transition-colors">创作者中心</a>
+                </nav>
+
+                <!-- 右侧功能区 -->
+                <div class="flex items-center space-x-4">
+                    <!-- 语言选择器 -->
+                    <div class="relative group">
+                        <button class="flex items-center text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-secondary transition-colors">
+                            <i class="fa fa-globe mr-1"></i>
+                            <span>华语</span>
+                            <i class="fa fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 hidden group-hover:block transition-all">
+                            <a href="#" class="block px-4 py-2 text-sm text-primary dark:text-secondary">华语</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">英语</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">印地语</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">西班牙语</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">法语</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">阿拉伯语</a>
+                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                            <button class="w-full text-left px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                更多语言 <i class="fa fa-angle-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 主题切换 -->
+                    <div class="flex items-center space-x-2">
+                        <button id="theme-default" class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-xs hover:scale-110 transition-transform">
+                            <i class="fa fa-leaf"></i>
+                        </button>
+                        <button id="theme-light" class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 text-xs hover:scale-110 transition-transform">
+                            <i class="fa fa-sun-o"></i>
+                        </button>
+                        <button id="theme-dark" class="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center text-gray-200 text-xs hover:scale-110 transition-transform">
+                            <i class="fa fa-moon-o"></i>
+                        </button>
+                    </div>
+
+                    <!-- 钱包连接 -->
+                    <button id="connect-wallet" class="hidden md:flex items-center bg-primary hover:bg-dark text-white px-4 py-2 rounded-lg transition-colors">
+                        <i class="fa fa-wallet mr-2"></i>
+                        <span>连接钱包</span>
+                    </button>
+
+                    <!-- 移动端菜单按钮 -->
+                    <button id="mobile-menu-button" class="md:hidden text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-secondary">
+                        <i class="fa fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white dark:bg-gray-900 shadow-lg">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#" class="block px-3 py-2 rounded-md text-base font-medium text-primary dark:text-secondary bg-light dark:bg-gray-800">首页</a>
+                <a href="#movies" class="block px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-light dark:hover:bg-gray-800 hover:text-primary dark:hover:text-secondary">电影</a>
+                <a href="#music" class="block px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-light dark:hover:bg-gray-800 hover:text-primary dark:hover:text-secondary">音乐</a>
+                <a href="#novels" class="block px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-light dark:hover:bg-gray-800 hover:text-primary dark:hover:text-secondary">小说</a>
+                <a href="#exchange" class="block px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-light dark:hover:bg-gray-800 hover:text-primary dark:hover:text-secondary">资产兑换</a>
+                <a href="#creators" class="block px-3 py-2 rounded-md text-base font-medium text-gray-600 dark:text-gray-300 hover:bg-light dark:hover:bg-gray-800 hover:text-primary dark:hover:text-secondary">创作者中心</a>
+                <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                    <button class="w-full flex items-center justify-center bg-primary hover:bg-dark text-white px-4 py-2 rounded-lg transition-colors mb-2">
+                        <i class="fa fa-wallet mr-2"></i>
+                        <span>连接钱包</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- 英雄区域 -->
+        <section class="relative bg-gradient-to-br from-primary to-dark text-white overflow-hidden">
+            <div class="absolute inset-0 opacity-20">
+                <div class="absolute inset-0 bg-[url('https://picsum.photos/id/1048/1920/1080')] bg-cover bg-center"></div>
+            </div>
+            <div class="container mx-auto px-4 py-20 md:py-32 relative z-10">
+                <div class="max-w-3xl">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-6 text-shadow">
+                        EACO 文娱数字资产平台
+                    </h1>
+                    <p class="text-xl md:text-2xl mb-8 text-gray-100">
+                        连接全球优质影视、音乐与小说内容，基于Web3技术的创作者经济生态
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#movies" class="bg-white text-primary hover:bg-gray-100 px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+                            <i class="fa fa-film mr-2"></i> 探索电影
+                        </a>
+                        <a href="#music" class="bg-transparent border-2 border-white text-white hover:bg-white/10 px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+                            <i class="fa fa-music mr-2"></i> 发现音乐
+                        </a>
+                        <a href="#exchange" class="bg-accent text-dark hover:bg-accent/90 px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+                            <i class="fa fa-exchange mr-2"></i> 资产兑换
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50 dark:from-gray-900 to-transparent"></div>
+        </section>
+
+        <!-- EACO 价格区域 -->
+        <section class="py-8 bg-white dark:bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-wrap items-center justify-between">
+                    <div class="mb-4 md:mb-0">
+                        <h2 class="text-2xl font-bold text-gray-800 dark:text-white">EACO 实时价格</h2>
+                        <p class="text-gray-600 dark:text-gray-400">更新于 <span id="price-update-time">2023-06-15 12:30:45</span></p>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full md:w-auto">
+                        <div class="bg-light dark:bg-gray-800 rounded-lg p-4 text-center">
+                            <div class="text-sm text-gray-600 dark:text-gray-400">EACO/CNH</div>
+                            <div class="text-2xl font-bold text-primary dark:text-secondary" id="eaco-cnh-price">¥12.56</div>
+                            <div class="text-green-500 text-sm"><i class="fa fa-caret-up"></i> 2.3%</div>
+                        </div>
+                        <div class="bg-light dark:bg-gray-800 rounded-lg p-4 text-center">
+                            <div class="text-sm text-gray-600 dark:text-gray-400">EACO/USDT</div>
+                            <div class="text-2xl font-bold text-primary dark:text-secondary" id="eaco-usdt-price">$1.75</div>
+                            <div class="text-green-500 text-sm"><i class="fa fa-caret-up"></i> 1.8%</div>
+                        </div>
+                        <div class="bg-light dark:bg-gray-800 rounded-lg p-4 text-center">
+                            <div class="text-sm text-gray-600 dark:text-gray-400">EACO/USDC</div>
+                            <div class="text-2xl font-bold text-primary dark:text-secondary" id="eaco-usdc-price">$1.76</div>
+                            <div class="text-green-500 text-sm"><i class="fa fa-caret-up"></i> 2.1%</div>
+                        </div>
+                        <div class="bg-light dark:bg-gray-800 rounded-lg p-4 text-center">
+                            <div class="text-sm text-gray-600 dark:text-gray-400">EACO/SOL</div>
+                            <div class="text-2xl font-bold text-primary dark:text-secondary" id="eaco-sol-price">0.084 SOL</div>
+                            <div class="text-red-500 text-sm"><i class="fa fa-caret-down"></i> 0.5%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 热门内容概览 -->
+        <section class="py-12 bg-gray-50 dark:bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-4">热门内容概览</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                        基于全球各大API数据聚合，实时更新最受欢迎的电影、音乐和小说内容
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- 电影概览 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden card-hover">
+                        <div class="h-48 relative">
+                            <img src="https://picsum.photos/id/1068/800/600" alt="热门电影" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 gradient-overlay flex items-end">
+                                <div class="p-6">
+                                    <h3 class="text-2xl font-bold text-white">热门电影</h3>
+                                    <p class="text-gray-200">实时更新全球前100部电影</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <div>
+                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">今日热门</span>
+                                    <h4 class="font-bold text-gray-800 dark:text-white">《星际穿越》</h4>
+                                </div>
+                                <div class="bg-primary/10 text-primary dark:bg-primary/20 px-2 py-1 rounded text-sm font-medium">
+                                    98% 匹配
+                                </div>
+                            </div>
+                            <div class="space-y-3 mb-6">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 dark:text-gray-300">本月榜单更新</span>
+                                    <span class="text-gray-800 dark:text-white font-medium">30部新电影</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 dark:text-gray-300">总浏览量</span>
+                                    <span class="text-gray-800 dark:text-white font-medium">1,256,890</span>
+                                </div>
+                            </div>
+                            <a href="#movies" class="block w-full text-center bg-primary hover:bg-dark text-white py-3 rounded-lg transition-colors">
+                                查看全部电影
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 音乐概览 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden card-hover">
+                        <div class="h-48 relative">
+                            <img src="https://picsum.photos/id/1074/800/600" alt="流行音乐" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 gradient-overlay flex items-end">
+                                <div class="p-6">
+                                    <h3 class="text-2xl font-bold text-white">流行音乐</h3>
+                                    <p class="text-gray-200">实时更新全球前100首歌曲</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <div>
+                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">今日热门</span>
+                                    <h4 class="font-bold text-gray-800 dark:text-white">《Blinding Lights》</h4>
+                                </div>
+                                <div class="bg-primary/10 text-primary dark:bg-primary/20 px-2 py-1 rounded text-sm font-medium">
+                                    95% 匹配
+                                </div>
+                            </div>
+                            <div class="space-y-3 mb-6">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 dark:text-gray-300">本月榜单更新</span>
+                                    <span class="text-gray-800 dark:text-white font-medium">50首新歌曲</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 dark:text-gray-300">总播放量</span>
+                                    <span class="text-gray-800 dark:text-white font-medium">8,752,143</span>
+                                </div>
+                            </div>
+                            <a href="#music" class="block w-full text-center bg-primary hover:bg-dark text-white py-3 rounded-lg transition-colors">
+                                查看全部音乐
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 小说概览 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden card-hover">
+                        <div class="h-48 relative">
+                            <img src="https://picsum.photos/id/24/800/600" alt="热门小说" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 gradient-overlay flex items-end">
+                                <div class="p-6">
+                                    <h3 class="text-2xl font-bold text-white">热门小说</h3>
+                                    <p class="text-gray-200">实时更新全球前100本小说</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <div>
+                                    <span class="text-sm font-medium text-gray-500 dark:text-gray-400">今日热门</span>
+                                    <h4 class="font-bold text-gray-800 dark:text-white">《三体》</h4>
+                                </div>
+                                <div class="bg-primary/10 text-primary dark:bg-primary/20 px-2 py-1 rounded text-sm font-medium">
+                                    99% 匹配
+                                </div>
+                            </div>
+                            <div class="space-y-3 mb-6">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 dark:text-gray-300">本月榜单更新</span>
+                                    <span class="text-gray-800 dark:text-white font-medium">25本新小说</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-600 dark:text-gray-300">总阅读量</span>
+                                    <span class="text-gray-800 dark:text-white font-medium">3,421,567</span>
+                                </div>
+                            </div>
+                            <a href="#novels" class="block w-full text-center bg-primary hover:bg-dark text-white py-3 rounded-lg transition-colors">
+                                查看全部小说
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 电影区域 -->
+        <section id="movies" class="py-16 bg-white dark:bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-wrap justify-between items-end mb-10">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-2">热门电影</h2>
+                        <p class="text-gray-600 dark:text-gray-400">全球最受欢迎的电影推荐</p>
+                    </div>
+                    <div class="mt-4 sm:mt-0">
+                        <div class="flex space-x-2">
+                            <button class="px-4 py-2 bg-primary text-white rounded-lg">今日</button>
+                            <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">本月</button>
+                            <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">今年</button>
+                            <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">去年</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 电影列表 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- 电影1 -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm card-hover">
+                        <div class="relative">
+                            <img src="https://picsum.photos/id/1025/500/750" alt="电影海报：星际穿越" class="w-full h-64 object-cover">
+                            <div class="absolute top-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">9.8</div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-1">星际穿越</h3>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">科幻 / 冒险 / 剧情</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-primary dark:text-secondary font-medium">免费预览</span>
+                                <button class="bg-primary/10 hover:bg-primary/20 text-primary dark:bg-primary/20 dark:hover:bg-primary/30 px-3 py-1 rounded-lg text-sm transition-colors">
+                                    <i class="fa fa-play-circle mr-1"></i> 播放
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 电影2 -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm card-hover">
+                        <div class="relative">
+                            <img src="https://picsum.photos/id/1011/500/750" alt="电影海报：肖申克的救赎" class="w-full h-64 object-cover">
+                            <div class="absolute top-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">9.7</div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-1">肖申克的救赎</h3>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">剧情 / 犯罪</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-primary dark:text-secondary font-medium">免费预览</span>
+                                <button class="bg-primary/10 hover:bg-primary/20 text-primary dark:bg-primary/20 dark:hover:bg-primary/30 px-3 py-1 rounded-lg text-sm transition-colors">
+                                    <i class="fa fa-play-circle mr-1"></i> 播放
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 电影3 -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm card-hover">
+                        <div class="relative">
+                            <img src="https://picsum.photos/id/1005/500/750" alt="电影海报：盗梦空间" class="w-full h-64 object-cover">
+                            <div class="absolute top-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">9.6</div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-1">盗梦空间</h3>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">科幻 / 悬疑 / 动作</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-primary dark:text-secondary font-medium">免费预览</span>
+                                <button class="bg-primary/10 hover:bg-primary/20 text-primary dark:bg-primary/20 dark:hover:bg-primary/30 px-3 py-1 rounded-lg text-sm transition-colors">
+                                    <i class="fa fa-play-circle mr-1"></i> 播放
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 电影4 -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm card-hover">
+                        <div class="relative">
+                            <img src="https://picsum.photos/id/1015/500/750" alt="电影海报：泰坦尼克号" class="w-full h-64 object-cover">
+                            <div class="absolute top-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">9.5</div>
+                        </div>
+                        <div class="p-4">
+                            <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-1">泰坦尼克号</h3>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">爱情 / 灾难 / 剧情</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-primary dark:text-secondary font-medium">免费预览</span>
+                                <button class="bg-primary/10 hover:bg-primary/20 text-primary dark:bg-primary/20 dark:hover:bg-primary/30 px-3 py-1 rounded-lg text-sm transition-colors">
+                                    <i class="fa fa-play-circle mr-1"></i> 播放
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 查看更多按钮 -->
+                <div class="text-center mt-10">
+                    <button class="px-6 py-3 border-2 border-primary text-primary hover:bg-primary hover:text-white rounded-lg font-medium transition-colors">
+                        查看更多电影 <i class="fa fa-angle-right ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- 电影分类 -->
+                <div class="mt-16">
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6">电影分类</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="#" class="px-4 py-2 bg-light dark:bg-gray-800 text-primary dark:text-secondary rounded-full text-sm hover:bg-primary hover:text-white transition-colors">剧情片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">动作片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">喜剧片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">科幻片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">恐怖片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">爱情片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">纪录片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">战争片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">悬疑片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">动画电影</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">奇幻片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">犯罪片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">西部片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">武侠片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">警匪片</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">冒险动作片</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 音乐区域 -->
+        <section id="music" class="py-16 bg-gray-50 dark:bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-wrap justify-between items-end mb-10">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-2">流行音乐</h2>
+                        <p class="text-gray-600 dark:text-gray-400">全球最受欢迎的音乐推荐</p>
+                    </div>
+                    <div class="mt-4 sm:mt-0">
+                        <div class="flex space-x-2">
+                            <button class="px-4 py-2 bg-primary text-white rounded-lg">今日</button>
+                            <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">本月</button>
+                            <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">今年</button>
+                            <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">去年</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 音乐列表 -->
+                <div class="space-y-4">
+                    <!-- 音乐1 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 flex flex-wrap items-center card-hover">
+                        <div class="w-16 h-16 flex-shrink-0 relative mr-4">
+                            <img src="https://picsum.photos/id/1082/200/200" alt="专辑封面：Blinding Lights" class="w-full h-full object-cover rounded-lg">
+                            <button class="absolute inset-0 bg-primary/80 text-white rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                <i class="fa fa-play text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <h3 class="font-bold text-gray-800 dark:text-white truncate">Blinding Lights</h3>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">The Weeknd</p>
+                        </div>
+                        <div class="mt-4 sm:mt-0 sm:mr-6 text-gray-500 dark:text-gray-400">
+                            <i class="fa fa-headphones mr-1"></i> 2.4M
+                        </div>
+                        <div class="mt-4 sm:mt-0 sm:mr-6 text-gray-500 dark:text-gray-400">
+                            <i class="fa fa-clock-o mr-1"></i> 3:20
+                        </div>
+                        <div class="mt-4 sm:mt-0">
+                            <span class="text-primary dark:text-secondary font-medium">免费试听</span>
+                        </div>
+                    </div>
+
+                    <!-- 音乐2 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 flex flex-wrap items-center card-hover">
+                        <div class="w-16 h-16 flex-shrink-0 relative mr-4">
+                            <img src="https://picsum.photos/id/1079/200/200" alt="专辑封面：Save Your Tears" class="w-full h-full object-cover rounded-lg">
+                            <button class="absolute inset-0 bg-primary/80 text-white rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                <i class="fa fa-play text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <h3 class="font-bold text-gray-800 dark:text-white truncate">Save Your Tears</h3>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">The Weeknd</p>
+                        </div>
+                        <div class="mt-4 sm:mt-0 sm:mr-6 text-gray-500 dark:text-gray-400">
+                            <i class="fa fa-headphones mr-1"></i> 1.8M
+                        </div>
+                        <div class="mt-4 sm:mt-0 sm:mr-6 text-gray-500 dark:text-gray-400">
+                            <i class="fa fa-clock-o mr-1"></i> 3:35
+                        </div>
+                        <div class="mt-4 sm:mt-0">
+                            <span class="text-primary dark:text-secondary font-medium">免费试听</span>
+                        </div>
+                    </div>
+
+                    <!-- 音乐3 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 flex flex-wrap items-center card-hover">
+                        <div class="w-16 h-16 flex-shrink-0 relative mr-4">
+                            <img src="https://picsum.photos/id/1083/200/200" alt="专辑封面：Levitating" class="w-full h-full object-cover rounded-lg">
+                            <button class="absolute inset-0 bg-primary/80 text-white rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                <i class="fa fa-play text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <h3 class="font-bold text-gray-800 dark:text-white truncate">Levitating</h3>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">Dua Lipa</p>
+                        </div>
+                        <div class="mt-4 sm:mt-0 sm:mr-6 text-gray-500 dark:text-gray-400">
+                            <i class="fa fa-headphones mr-1"></i> 1.6M
+                        </div>
+                        <div class="mt-4 sm:mt-0 sm:mr-6 text-gray-500 dark:text-gray-400">
+                            <i class="fa fa-clock-o mr-1"></i> 3:23
+                        </div>
+                        <div class="mt-4 sm:mt-0">
+                            <span class="text-primary dark:text-secondary font-medium">免费试听</span>
+                        </div>
+                    </div>
+
+                    <!-- 音乐4 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 flex flex-wrap items-center card-hover">
+                        <div class="w-16 h-16 flex-shrink-0 relative mr-4">
+                            <img src="https://picsum.photos/id/1084/200/200" alt="专辑封面：Stay" class="w-full h-full object-cover rounded-lg">
+                            <button class="absolute inset-0 bg-primary/80 text-white rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                                <i class="fa fa-play text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <h3 class="font-bold text-gray-800 dark:text-white truncate">Stay</h3>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">Justin Bieber, The Kid LAROI</p>
+                        </div>
+                        <div class="mt-4 sm:mt-0 sm:mr-6 text-gray-500 dark:text-gray-400">
+                            <i class="fa fa-headphones mr-1"></i> 1.5M
+                        </div>
+                        <div class="mt-4 sm:mt-0 sm:mr-6 text-gray-500 dark:text-gray-400">
+                            <i class="fa fa-clock-o mr-1"></i> 2:21
+                        </div>
+                        <div class="mt-4 sm:mt-0">
+                            <span class="text-primary dark:text-secondary font-medium">免费试听</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 查看更多按钮 -->
+                <div class="text-center mt-10">
+                    <button class="px-6 py-3 border-2 border-primary text-primary hover:bg-primary hover:text-white rounded-lg font-medium transition-colors">
+                        查看更多音乐 <i class="fa fa-angle-right ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- 音乐分类 -->
+                <div class="mt-16">
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6">音乐分类</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="#" class="px-4 py-2 bg-light dark:bg-gray-800 text-primary dark:text-secondary rounded-full text-sm hover:bg-primary hover:text-white transition-colors">流行音乐（Pop）</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">摇滚（Rock）</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">嘻哈（Hip-Hop）</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">古典音乐</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">乡村音乐（Country）</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">电子音乐（Electronic）</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">节奏布鲁斯（R&B）</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">蓝调（Blues）</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">民谣（Folk）</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">影视原声（OST）</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">舞曲</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 小说区域 -->
+        <section id="novels" class="py-16 bg-white dark:bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-wrap justify-between items-end mb-10">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-2">热门小说</h2>
+                        <p class="text-gray-600 dark:text-gray-400">全球最受欢迎的小说推荐</p>
+                    </div>
+                    <div class="mt-4 sm:mt-0">
+                        <div class="flex space-x-2">
+                            <button class="px-4 py-2 bg-primary text-white rounded-lg">今日</button>
+                            <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">本月</button>
+                            <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">今年</button>
+                            <button class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">去年</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 小说列表 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- 小说1 -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm card-hover">
+                        <div class="p-5 flex">
+                            <div class="w-24 h-36 flex-shrink-0 mr-4">
+                                <img src="https://picsum.photos/id/24/200/300" alt="小说封面：三体" class="w-full h-full object-cover rounded-lg">
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-1">三体</h3>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">刘慈欣</p>
+                                <p class="text-gray-500 dark:text-gray-400 text-xs mb-3">科幻 / 硬科幻</p>
+                                <div class="flex items-center text-sm text-yellow-500 mb-3">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-half-o"></i>
+                                    <span class="text-gray-600 dark:text-gray-400 ml-1">4.8</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-primary dark:text-secondary font-medium text-sm">免费试读</span>
+                                    <button class="bg-primary/10 hover:bg-primary/20 text-primary dark:bg-primary/20 dark:hover:bg-primary/30 px-3 py-1 rounded-lg text-sm transition-colors">
+                                        <i class="fa fa-book mr-1"></i> 阅读
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 小说2 -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm card-hover">
+                        <div class="p-5 flex">
+                            <div class="w-24 h-36 flex-shrink-0 mr-4">
+                                <img src="https://picsum.photos/id/20/200/300" alt="小说封面：百年孤独" class="w-full h-full object-cover rounded-lg">
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-1">百年孤独</h3>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">加西亚·马尔克斯</p>
+                                <p class="text-gray-500 dark:text-gray-400 text-xs mb-3">魔幻现实主义</p>
+                                <div class="flex items-center text-sm text-yellow-500 mb-3">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-o"></i>
+                                    <span class="text-gray-600 dark:text-gray-400 ml-1">4.2</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-primary dark:text-secondary font-medium text-sm">免费试读</span>
+                                    <button class="bg-primary/10 hover:bg-primary/20 text-primary dark:bg-primary/20 dark:hover:bg-primary/30 px-3 py-1 rounded-lg text-sm transition-colors">
+                                        <i class="fa fa-book mr-1"></i> 阅读
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 小说3 -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm card-hover">
+                        <div class="p-5 flex">
+                            <div class="w-24 h-36 flex-shrink-0 mr-4">
+                                <img src="https://picsum.photos/id/180/200/300" alt="小说封面：指环王" class="w-full h-full object-cover rounded-lg">
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-1">指环王</h3>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">J.R.R.托尔金</p>
+                                <p class="text-gray-500 dark:text-gray-400 text-xs mb-3">奇幻 / 冒险</p>
+                                <div class="flex items-center text-sm text-yellow-500 mb-3">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <span class="text-gray-600 dark:text-gray-400 ml-1">4.9</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-primary dark:text-secondary font-medium text-sm">免费试读</span>
+                                    <button class="bg-primary/10 hover:bg-primary/20 text-primary dark:bg-primary/20 dark:hover:bg-primary/30 px-3 py-1 rounded-lg text-sm transition-colors">
+                                        <i class="fa fa-book mr-1"></i> 阅读
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 小说4 -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm card-hover">
+                        <div class="p-5 flex">
+                            <div class="w-24 h-36 flex-shrink-0 mr-4">
+                                <img src="https://picsum.photos/id/160/200/300" alt="小说封面：傲慢与偏见" class="w-full h-full object-cover rounded-lg">
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-1">傲慢与偏见</h3>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">简·奥斯汀</p>
+                                <p class="text-gray-500 dark:text-gray-400 text-xs mb-3">爱情 / 经典</p>
+                                <div class="flex items-center text-sm text-yellow-500 mb-3">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-half-o"></i>
+                                    <span class="text-gray-600 dark:text-gray-400 ml-1">4.7</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-primary dark:text-secondary font-medium text-sm">免费试读</span>
+                                    <button class="bg-primary/10 hover:bg-primary/20 text-primary dark:bg-primary/20 dark:hover:bg-primary/30 px-3 py-1 rounded-lg text-sm transition-colors">
+                                        <i class="fa fa-book mr-1"></i> 阅读
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 查看更多按钮 -->
+                <div class="text-center mt-10">
+                    <button class="px-6 py-3 border-2 border-primary text-primary hover:bg-primary hover:text-white rounded-lg font-medium transition-colors">
+                        查看更多小说 <i class="fa fa-angle-right ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- 小说分类 -->
+                <div class="mt-16">
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6">小说分类</h3>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="#" class="px-4 py-2 bg-light dark:bg-gray-800 text-primary dark:text-secondary rounded-full text-sm hover:bg-primary hover:text-white transition-colors">现实主义小说</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">科幻小说</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">奇幻小说</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">悬疑 / 推理小说</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">爱情小说</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">历史小说</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">武侠小说</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">恐怖 / 惊悚小说</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">青春小说</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">长篇小说</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">中篇小说</a>
+                        <a href="#" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm hover:bg-primary hover:text-white transition-colors">短篇小说</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 资产兑换区域 -->
+        <section id="exchange" class="py-16 bg-gray-50 dark:bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-4">EACO 资产兑换</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                        安全便捷地兑换EACO与其他数字资产，支持多种流行加密货币
+                    </p>
+                </div>
+
+                <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-6 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white">资产兑换</h3>
+                            <button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-secondary">
+                                <i class="fa fa-exchange"></i>
+                            </button>
+                        </div>
+
+                        <!-- 兑换表单 -->
+                        <div class="space-y-6">
+                            <!-- 从...兑换 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">从</label>
+                                <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                                    <input type="text" placeholder="0.00" class="flex-grow px-4 py-3 bg-transparent text-gray-800 dark:text-white focus:outline-none" value="100">
+                                    <div class="flex items-center bg-gray-100 dark:bg-gray-700 px-4 py-3">
+                                        <img src="https://picsum.photos/id/101/32/32" alt="EACO" class="w-6 h-6 rounded-full mr-2">
+                                        <span class="text-gray-800 dark:text-white font-medium">EACO</span>
+                                        <i class="fa fa-chevron-down ml-2 text-gray-500"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-right">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">余额: 1,250.00 EACO</span>
+                                </div>
+                            </div>
+
+                            <!-- 到...兑换 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">到</label>
+                                <div class="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+                                    <input type="text" placeholder="0.00" class="flex-grow px-4 py-3 bg-transparent text-gray-800 dark:text-white focus:outline-none" value="175.00">
+                                    <div class="flex items-center bg-gray-100 dark:bg-gray-700 px-4 py-3">
+                                        <img src="https://picsum.photos/id/102/32/32" alt="USDT" class="w-6 h-6 rounded-full mr-2">
+                                        <span class="text-gray-800 dark:text-white font-medium">USDT</span>
+                                        <i class="fa fa-chevron-down ml-2 text-gray-500"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-right">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">余额: 320.50 USDT</span>
+                                </div>
+                            </div>
+
+                            <!-- 兑换率 -->
+                            <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                                <p class="text-sm text-gray-600 dark:text-gray-300">
+                                    兑换率: 1 EACO = 1.75 USDT
+                                </p>
+                            </div>
+
+                            <!-- 兑换按钮 -->
+                            <button class="w-full bg-primary hover:bg-dark text-white font-medium py-3 rounded-lg transition-colors">
+                                确认兑换
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 市场数据 -->
+                    <div class="p-6">
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">市场数据</h3>
+                        <div class="h-64">
+                            <canvas id="priceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 支持的货币 -->
+                <div class="mt-12">
+                    <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-6 text-center">支持的货币</h3>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <div class="flex items-center bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm">
+                            <img src="https://picsum.photos/id/101/32/32" alt="EACO" class="w-6 h-6 rounded-full mr-2">
+                            <span class="text-gray-800 dark:text-white">EACO</span>
+                        </div>
+                        <div class="flex items-center bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm">
+                            <img src="https://picsum.photos/id/102/32/32" alt="USDT" class="w-6 h-6 rounded-full mr-2">
+                            <span class="text-gray-800 dark:text-white">USDT</span>
+                        </div>
+                        <div class="flex items-center bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm">
+                            <img src="https://picsum.photos/id/103/32/32" alt="USDC" class="w-6 h-6 rounded-full mr-2">
+                            <span class="text-gray-800 dark:text-white">USDC</span>
+                        </div>
+                        <div class="flex items-center bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm">
+                            <img src="https://picsum.photos/id/104/32/32" alt="CNH" class="w-6 h-6 rounded-full mr-2">
+                            <span class="text-gray-800 dark:text-white">CNH</span>
+                        </div>
+                        <div class="flex items-center bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm">
+                            <img src="https://picsum.photos/id/105/32/32" alt="BTC" class="w-6 h-6 rounded-full mr-2">
+                            <span class="text-gray-800 dark:text-white">BTC</span>
+                        </div>
+                        <div class="flex items-center bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm">
+                            <img src="https://picsum.photos/id/106/32/32" alt="ETH" class="w-6 h-6 rounded-full mr-2">
+                            <span class="text-gray-800 dark:text-white">ETH</span>
+                        </div>
+                        <div class="flex items-center bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm">
+                            <img src="https://picsum.photos/id/107/32/32" alt="SOL" class="w-6 h-6 rounded-full mr-2">
+                            <span class="text-gray-800 dark:text-white">SOL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 创作者中心 -->
+        <section id="creators" class="py-16 bg-white dark:bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-4">创作者中心</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                        加入我们的创作者经济生态，分享你的作品并获得收益
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                    <!-- 创作者收益分成 -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">收益分成机制</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-6">采用智能合约自动分配收益，透明公正</p>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700 dark:text-gray-300">内容上传者</span>
+                                    <span class="font-medium text-gray-800 dark:text-white">55%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div class="bg-primary h-2 rounded-full" style="width: 55%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700 dark:text-gray-300">平台运营</span>
+                                    <span class="font-medium text-gray-800 dark:text-white">22%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div class="bg-secondary h-2 rounded-full" style="width: 22%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700 dark:text-gray-300">审核委员会</span>
+                                    <span class="font-medium text-gray-800 dark:text-white">8%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div class="bg-accent h-2 rounded-full" style="width: 8%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700 dark:text-gray-300">公益基金</span>
+                                    <span class="font-medium text-gray-800 dark:text-white">3%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 3%"></div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-gray-700 dark:text-gray-300">备用金</span>
+                                    <span class="font-medium text-gray-800 dark:text-white">12%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                    <div class="bg-gray-500 h-2 rounded-full" style="width: 12%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 会员类型 -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-4">会员类型</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-6">多元化的会员体系，满足不同用户需求</p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
+                                    <i class="fa fa-user"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800 dark:text-white">普通用户</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">免费浏览基本数据，付费获取完整内容</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
+                                    <i class="fa fa-microphone"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800 dark:text-white">创作者</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">上传原创内容，获得收益分成</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
+                                    <i class="fa fa-check-square-o"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800 dark:text-white">审核员</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">审核内容质量，获得审核奖励</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
+                                    <i class="fa fa-heart"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800 dark:text-white">义工</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">社区贡献者，获得平台积分奖励</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 加入按钮 -->
+                <div class="text-center">
+                    <a href="#" class="inline-block px-8 py-4 bg-primary hover:bg-dark text-white font-medium rounded-lg transition-colors">
+                        加入创作者计划 <i class="fa fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI 推荐区域 -->
+        <section class="py-16 bg-gray-50 dark:bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-4">AI 智能推荐</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                        基于全球顶尖AI技术，为你推荐个性化的电影、音乐和小说
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- AI 电影推荐 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center mb-6">
+                                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-4">
+                                    <i class="fa fa-film text-xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-800 dark:text-white">AI 电影推荐</h3>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center">
+                                    <span class="text-gray-600 dark:text-gray-400 mr-2">基于你的喜好，推荐：</span>
+                                    <span class="text-primary dark:text-secondary font-medium">盗梦空间</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-gray-600 dark:text-gray-400 mr-2">类似电影：</span>
+                                    <span class="text-gray-800 dark:text-white">星际穿越、黑客帝国</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-gray-600 dark:text-gray-400 mr-2">推荐指数：</span>
+                                    <div class="flex text-yellow-500">
+                                        <i class="fa fa-star"><i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="mt-6 w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-2 rounded-lg transition-colors">
+                                查看更多推荐
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI 音乐推荐 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center mb-6">
+                                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-4">
+                                    <i class="fa fa-music text-xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-800 dark:text-white">AI 音乐推荐</h3>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center">
+                                    <span class="text-gray-600 dark:text-gray-400 mr-2">基于你的喜好，推荐：</span>
+                                    <span class="text-primary dark:text-secondary font-medium">Blinding Lights</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-gray-600 dark:text-gray-400 mr-2">类似歌曲：</span>
+                                    <span class="text-gray-800 dark:text-white">Save Your Tears、Levitating</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-gray-600 dark:text-gray-400 mr-2">推荐指数：</span>
+                                    <div class="flex text-yellow-500">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star-half-o"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="mt-6 w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-2 rounded-lg transition-colors">
+                                查看更多推荐
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI 小说推荐 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center mb-6">
+                                <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-4">
+                                    <i class="fa fa-book text-xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold text-gray-800 dark:text-white">AI 小说推荐</h3>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="flex items-center">
+                                    <span class="text-gray-600 dark:text-gray-400 mr-2">基于你的喜好，推荐：</span>
+                                    <span class="text-primary dark:text-secondary font-medium">三体</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-gray-600 dark:text-gray-400 mr-2">类似小说：</span>
+                                    <span class="text-gray-800 dark:text-white">球状闪电、基地系列</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="text-gray-600 dark:text-gray-400 mr-2">推荐指数：</span>
+                                    <div class="flex text-yellow-500">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button class="mt-6 w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-2 rounded-lg transition-colors">
+                                查看更多推荐
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-900 text-gray-300 pt-16 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <!-- 关于EACO -->
+                <div>
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center mr-2">
+                            <span class="text-white font-bold text-xl">e</span>
+                        </div>
+                        <span class="text-xl font-bold text-white">EACO</span>
+                    </div>
+                    <p class="mb-4 text-gray-400">
+                        EACO是地球最好的朋友，连接地球和宇宙万物，计算劳动价值，量化地球资源。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-telegram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-discord text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 快速链接 -->
+                <div>
+                    <h3 class="text-white font-bold text-lg mb-4">快速链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="#movies" class="text-gray-400 hover:text-white transition-colors">电影</a></li>
+                        <li><a href="#music" class="text-gray-400 hover:text-white transition-colors">音乐</a></li>
+                        <li><a href="#novels" class="text-gray-400 hover:text-white transition-colors">小说</a></li>
+                        <li><a href="#exchange" class="text-gray-400 hover:text-white transition-colors">资产兑换</a></li>
+                        <li><a href="#creators" class="text-gray-400 hover:text-white transition-colors">创作者中心</a></li>
+                    </ul>
+                </div>
+
+                <!-- 社区链接 -->
+                <div>
+                    <h3 class="text-white font-bold text-lg mb-4">社区链接</h3>
+                    <ul class="space-y-2">
+                        <li><a href="https://linktr.ee/web3eaco" class="text-gray-400 hover:text-white transition-colors">EACO 链接汇总</a></li>
+                        <li><a href="https://solscan.io/token/DqfoyZH96RnvZusSp3Cdncjpyp3C74ZmJzGhjmHnDHRH" class="text-gray-400 hover:text-white transition-colors">Solscan</a></li>
+                        <li><a href="https://x.com/eacocc" class="text-gray-400 hover:text-white transition-colors">Twitter</a></li>
+                        <li><a href="https://github.com/eacocc/EACO_Exchange_DApp" class="text-gray-400 hover:text-white transition-colors">E swap GitHub</a></li>
+                        <li><a href="https://t.me/eacocny" class="text-gray-400 hover:text-white transition-colors">中文社区</a></li>
+                        <li><a href="https://t.me/e_eacocc" class="text-gray-400 hover:text-white transition-colors">英文社区</a></li>
+                    </ul>
+                </div>
+
+                <!-- 公益链接 -->
+                <div>
+                    <h3 class="text-white font-bold text-lg mb-4">公益项目</h3>
+                    <ul class="space-y-2">
+                        <li><a href="https://app--e21-web3-love-public-welfare-2edfc138.base44.app/HelpCNH" class="text-gray-400 hover:text-white transition-colors">EACO公益：HelpCNH</a></li>
+                        <li><a href="https://app--e21-web3-love-public-welfare-2edfc138.base44.app/" class="text-gray-400 hover:text-white transition-colors">EACO21公益</a></li>
+                        <li><a href="https://app--eaco-tcm-ai-f32fa3b1.base44.app/TCMEducation" class="text-gray-400 hover:text-white transition-colors">中医教育</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 分隔线 -->
+            <div class="border-t border-gray-800 py-8 mb-8">
+                <div class="text-center mb-6">
+                    <p class="text-lg text-white font-medium mb-2">EACO 代码重构e文明</p>
+                    <p class="text-gray-400">代码e即财富，EACO连接地球和宇宙的一切，e连接地球和宇宙万物。</p>
+                    <p class="text-gray-400 mt-2">EACO is Earth's best friend; $e=$eaco.计算劳动价值，量化地球资源;</p>
+                </div>
+            </div>
+
+            <!-- 免责声明 -->
+            <div class="text-center text-gray-500 text-sm">
+                <p class="mb-2">所有电影音乐等信息仅供参考，以实际交易为准，只使用CNH离岸人民币，为了安全不使用CNY人民币字样，解释权归 eaco21文娱外贸等发展各小组。</p>
+                <p class="mb-4">重要免责声明：本工具生成的任何内容均由eaco+AI等基于算法提供，（如有侵权，请告知，xcom/tg:@eacocc，3-30个工作日内回复处理)仅供学习和参考交流，随时升级优化完善到地球村最高的正能量状态。</p>
+                <p>&copy; 2023 EACO 文娱数字资产平台. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 移动端菜单切换
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 主题切换功能
+        const themeDefault = document.getElementById('theme-default');
+        const themeLight = document.getElementById('theme-light');
+        const themeDark = document.getElementById('theme-dark');
+        const body = document.body;
+
+        // 应用主题
+        function applyTheme(theme) {
+            body.classList.remove('theme-default', 'theme-light', 'theme-dark', 'bg-gray-50', 'bg-white', 'dark:bg-gray-900');
+            
+            if (theme === 'default') {
+                body.classList.add('theme-default', 'bg-gray-50', 'dark:bg-gray-900');
+            } else if (theme === 'light') {
+                body.classList.add('theme-light', 'bg-white');
+                body.classList.remove('dark');
+            } else if (theme === 'dark') {
+                body.classList.add('theme-dark', 'dark:bg-gray-900', 'dark');
+            }
+            
+            // 保存主题偏好
+            localStorage.setItem('eaco-theme', theme);
+        }
+
+        // 初始化主题
+        const savedTheme = localStorage.getItem('eaco-theme') || 'default';
+        applyTheme(savedTheme);
+
+        // 主题切换事件
+        themeDefault.addEventListener('click', () => applyTheme('default'));
+        themeLight.addEventListener('click', () => applyTheme('light'));
+        themeDark.addEventListener('click', () => applyTheme('dark'));
+
+        // 价格图表
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        const priceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                datasets: [{
+                    label: 'EACO/USDT 价格',
+                    data: [1.2, 1.4, 1.3, 1.6, 1.5, 1.75],
+                    borderColor: '#2E7D32',
+                    backgroundColor: 'rgba(46, 125, 50, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        grid: {
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            color: document.documentElement.classList.contains('dark') ? '#9CA3AF' : '#4B5563'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: document.documentElement.classList.contains('dark') ? '#9CA3AF' : '#4B5563'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 模拟价格更新
+        function updatePrices() {
+            const prices = {
+                'eaco-cnh-price': (12 + Math.random() * 2).toFixed(2),
+                'eaco-usdt-price': (1.6 + Math.random() * 0.3).toFixed(2),
+                'eaco-usdc-price': (1.6 + Math.random() * 0.3).toFixed(2),
+                'eaco-sol-price': (0.08 + Math.random() * 0.02).toFixed(3)
+            };
+
+            for (const [id, price] of Object.entries(prices)) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = id.startsWith('eaco-sol') ? `${price} SOL` : 
+                                         id.includes('cnh') ? `¥${price}` : `$${price}`;
+                }
+            }
+
+            // 更新时间
+            const now = new Date();
+            document.getElementById('price-update-time').textContent = now.toLocaleString();
+        }
+
+        // 初始更新价格
+        updatePrices();
+        // 每30秒更新一次价格
+        setInterval(updatePrices, 30000);
+
+        // 钱包连接功能
+        document.getElementById('connect-wallet').addEventListener('click', async () => {
+            try {
+                // 检查是否安装了Solana钱包
+                if (window.solana && window.solana.isPhantom) {
+                    console.log('Phantom钱包已检测到');
+                    
+                    // 请求连接
+                    const response = await window.solana.connect();
+                    console.log('钱包已连接:', response.publicKey.toString());
+                    
+                    alert(`钱包已连接: ${response.publicKey.toString().substring(0, 6)}...${response.publicKey.toString().substring(-4)}`);
+                } else {
+                    alert('请安装Phantom钱包以连接');
+                    window.open('https://phantom.app/', '_blank');
+                }
+            } catch (error) {
+                console.error('钱包连接错误:', error);
+                alert('连接钱包时发生错误');
+            }
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // 关闭移动菜单（如果打开）
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
